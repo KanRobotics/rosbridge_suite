@@ -41,6 +41,7 @@ from rclpy.qos import DurabilityPolicy, QoSProfile
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.call_service import CallService
+from rosbridge_library.capabilities.call_action import CallAction
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
@@ -201,6 +202,8 @@ class RosbridgeWebsocketNode(Node):
 
         services_glob = self.declare_parameter("services_glob", "").value
 
+        actions_glob = self.declare_parameter("actions_glob", "").value
+
         params_glob = self.declare_parameter("params_glob", "").value
 
         RosbridgeWebSocket.topics_glob = [
@@ -211,6 +214,11 @@ class RosbridgeWebsocketNode(Node):
         RosbridgeWebSocket.services_glob = [
             element.strip().strip("'")
             for element in services_glob[1:-1].split(",")
+            if len(element.strip().strip("'")) > 0
+        ]
+        RosbridgeWebSocket.actions_glob = [
+            element.strip().strip("'")
+            for element in actions_glob[1:-1].split(",")
             if len(element.strip().strip("'")) > 0
         ]
         RosbridgeWebSocket.params_glob = [
@@ -280,6 +288,20 @@ class RosbridgeWebsocketNode(Node):
                 print("--services_glob argument provided without a value. (can be None or a list)")
                 sys.exit(-1)
 
+        if "--actions_glob" in sys.argv:
+            idx = sys.argv.index("--actions_glob") + 1
+            if idx < len(sys.argv):
+                value = sys.argv[idx]
+                if value == "None":
+                    RosbridgeWebSocket.actions_glob = []
+                else:
+                    RosbridgeWebSocket.actions_glob = [
+                        element.strip().strip("'") for element in value[1:-1].split(",")
+                    ]
+            else:
+                print("--actions_glob argument provided without a value. (can be None or a list)")
+                sys.exit(-1)
+
         if "--params_glob" in sys.argv:
             idx = sys.argv.index("--params_glob") + 1
             if idx < len(sys.argv):
@@ -300,6 +322,9 @@ class RosbridgeWebsocketNode(Node):
         # To be able to access the list of topics and services, you must be able to access the rosapi services.
         if RosbridgeWebSocket.services_glob:
             RosbridgeWebSocket.services_glob.append("/rosapi/*")
+            
+        if RosbridgeWebSocket.actions_glob:
+            RosbridgeWebSocket.actions_glob.append("/rosapi/*")
 
         Subscribe.topics_glob = RosbridgeWebSocket.topics_glob
         Advertise.topics_glob = RosbridgeWebSocket.topics_glob
@@ -307,6 +332,7 @@ class RosbridgeWebsocketNode(Node):
         AdvertiseService.services_glob = RosbridgeWebSocket.services_glob
         UnadvertiseService.services_glob = RosbridgeWebSocket.services_glob
         CallService.services_glob = RosbridgeWebSocket.services_glob
+        CallAction.actions_glob = RosbridgeWebSocket.actions_glob
 
 
 def main(args=None):

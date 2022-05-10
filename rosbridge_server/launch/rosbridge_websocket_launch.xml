@@ -16,6 +16,7 @@
 
   <arg name="topics_glob" default="" />
   <arg name="services_glob" default="" />
+  <arg name="actions_glob" default="" />
   <arg name="params_glob" default="" />
   <arg name="bson_only_mode" default="false" />
 
