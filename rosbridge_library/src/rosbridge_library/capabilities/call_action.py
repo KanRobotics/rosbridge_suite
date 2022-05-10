@@ -34,7 +34,7 @@ import fnmatch
 from functools import partial
 
 from rosbridge_library.capability import Capability
-from rosbridge_library.internal.services import ServiceCaller
+from rosbridge_library.internal.actions import ActionCaller
 
 
 class CallAction(Capability):
@@ -97,7 +97,7 @@ class CallAction(Capability):
         e_cb = partial(self._failure, cid, action)
 
         # Run action caller in the same thread.
-        ServiceCaller(trim_actionname(action), args, s_cb, e_cb, self.protocol.node_handle).run()
+        ActionCaller(trim_actionname(action), args, s_cb, e_cb, self.protocol.node_handle).run()
 
     def _success(self, cid, action, fragment_size, compression, message):
         outgoing_message = {

@@ -44,8 +44,10 @@ Methods typically return the requested class or instance, or None if not found
 # Variable containing the loaded classes
 _loaded_msgs = {}
 _loaded_srvs = {}
+_loaded_actions = {}
 _msgs_lock = Lock()
 _srvs_lock = Lock()
+_actions_lock = Lock()
 
 
 class InvalidTypeStringException(Exception):
@@ -85,6 +87,13 @@ def get_service_class(typestring):
     return _get_srv_class(typestring)
 
 
+def get_action_class(typestring):
+    """Loads the service type specified.
+
+    Returns the loaded class, or None on failure"""
+    return _get_action_class(typestring)
+
+
 def get_message_instance(typestring):
     """If not loaded, loads the specified type.
     Then returns an instance of it, or None."""
@@ -100,6 +109,21 @@ def get_service_request_instance(typestring):
 def get_service_response_instance(typestring):
     cls = get_service_class(typestring)
     return cls.Response()
+
+
+def get_action_request_instance(typestring):
+    cls = get_action_class(typestring)
+    return cls.Goal()
+
+
+def get_action_feedback_instance(typestring):
+    cls = get_action_class(typestring)
+    return cls.Feedback()
+
+
+def get_action_result_instance(typestring):
+    cls = get_action_class(typestring)
+    return cls.Result()
 
 
 def _get_msg_class(typestring):
@@ -118,6 +142,15 @@ def _get_srv_class(typestring):
     Throws various exceptions if loading the srv class fails"""
     global _loaded_srvs, _srvs_lock
     return _get_class(typestring, "srv", _loaded_srvs, _srvs_lock)
+
+
+def _get_action_class(typestring):
+    """If not loaded, loads the specified srv class then returns an instance
+    of it
+
+    Throws various exceptions if loading the srv class fails"""
+    global _loaded_actions, _actions_lock
+    return _get_class(typestring, "action", _loaded_actions, _actions_lock)
 
 
 def _get_class(typestring, subname, cache, lock):
