@@ -120,9 +120,18 @@ class RosbridgeWebsocketNode(Node):
         if "--address" in sys.argv:
             idx = sys.argv.index("--address") + 1
             if idx < len(sys.argv):
-                address = int(sys.argv[idx])
+                address = sys.argv[idx]
             else:
                 print("--address argument provided without a value.")
+                sys.exit(-1)
+
+        url_path = self.declare_parameter("url_path", "/").value
+        if "--url_path" in sys.argv:
+            idx = sys.argv.index("--url_path") + 1
+            if idx < len(sys.argv):
+                url_path = str(sys.argv[idx])
+            else:
+                print("--url_path argument provided without a value.")
                 sys.exit(-1)
 
         retry_startup_delay = self.declare_parameter("retry_startup_delay", 2.0).value  # seconds.
@@ -138,9 +147,11 @@ class RosbridgeWebsocketNode(Node):
         # Done with parameter handling                   #
         ##################################################
 
-        application = Application(
-            [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)], **tornado_settings
-        )
+        handlers = [(r"/", RosbridgeWebSocket), (r"", RosbridgeWebSocket)]
+        if url_path != "/":
+            handlers = [(rf"{url_path}", RosbridgeWebSocket)]
+
+        application = Application(handlers, **tornado_settings)
 
         connected = False
         while not connected and self.context.ok():
@@ -342,16 +353,18 @@ def main(args=None):
     rclpy.init(args=args)
     node = RosbridgeWebsocketNode()
 
-    spin_callback = PeriodicCallback(lambda: rclpy.spin_once(node, timeout_sec=0.01), 1)
+    executor = rclpy.executors.SingleThreadedExecutor()
+    executor.add_node(node)
+    spin_callback = PeriodicCallback(lambda: executor.spin_once(timeout_sec=0.01), 1)
     spin_callback.start()
     try:
         start_hook()
+        node.destroy_node()
+        rclpy.shutdown()
     except KeyboardInterrupt:
-        node.get_logger().info("Exiting due to SIGINT")
-
-    node.destroy_node()
-    rclpy.shutdown()
-    shutdown_hook()  # shutdown hook to stop the server
+        print("Exiting due to SIGINT")
+    finally:
+        shutdown_hook()  # shutdown hook to stop the server
 
 
 if __name__ == "__main__":

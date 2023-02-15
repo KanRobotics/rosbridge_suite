@@ -2,6 +2,22 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.1 (2022-10-21)
+------------------
+* Add graceful shutdown (`#794 <https://github.com/RobotWebTools/rosbridge_suite/issues/794>`_)
+* Contributors: Hans-Joachim Krauch
+
+1.3.0 (2022-08-16)
+------------------
+* Fixed /get_param service for arrays (`#776 <https://github.com/RobotWebTools/rosbridge_suite/issues/776>`_)
+* Contributors: p0rys
+
+1.2.0 (2022-05-20)
+------------------
+* Added `/rosapi/get_ros_version` service (`#708 <https://github.com/RobotWebTools/rosbridge_suite/issues/708>`_)
+* Fixed node name collision with websocket launch file (`#707 <https://github.com/RobotWebTools/rosbridge_suite/issues/707>`_)
+* Contributors: Jacob Bandes-Storch, Kedus Mathewos, rob-clarke
+
 1.1.2 (2022-01-03)
 ------------------
 
